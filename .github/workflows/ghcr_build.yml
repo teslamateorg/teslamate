@@ -42,10 +42,7 @@ jobs:
       - name : machine echo github
         env : { CONTENT : "${{ toJson(github) }}" }    
         run : "echo $CONTENT"
-      - name: echo
-        run: |
-          ls -l  && cat VERSION 
-          
+
       - uses: actions/checkout@v4
         if: ${{ github.event_name != 'pull_request_target' }}
       - uses: actions/checkout@v4
@@ -53,7 +50,10 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-
+      - name: echo
+        run: |
+          ls -l  && cat VERSION 
+          
       - name: Buildx
         uses: ./.github/actions/build
         with:
