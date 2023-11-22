@@ -6,11 +6,12 @@ on:
     paths:
       - "**/*"
       - "!.github/**"
+    branches: ["ci"]
   pull_request_target:
-    branches: ["master"]
-    paths:
-      - "**/*"
-      - "!.github/**" # Important: Exclude PRs related to .github from auto-run
+    branches: ["master", "ci*"]
+#    paths:
+#      - "**/*"
+#      - "!.github/**" # Important: Exclude PRs related to .github from auto-run
 
 env:
   REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
@@ -35,12 +36,21 @@ jobs:
           - platform: "linux/arm64"
             runs_on: "buildjet-2vcpu-ubuntu-2204-arm"
             cache_id: arm64
-
     runs-on: ${{ matrix.runs_on }}
     timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name : machine echo github
+        env : { CONTENT : "${{ toJson(github) }}" }    
+        run : "echo $CONTENT"
+        
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name != 'pull_request_target' }}
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name == 'pull_request_target' }}
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
       - name: Buildx
         uses: ./.github/actions/build
         with:
@@ -48,7 +58,6 @@ jobs:
           repository_owner: ${{ github.repository_owner }}
           repository: ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ github.ref_name }}
           labels: |
             org.opencontainers.image.version=${{ github.ref || github.ref_name }}
 
@@ -76,8 +85,13 @@ jobs:
   grafana:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name != 'pull_request_target' }}
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name == 'pull_request_target' }}
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3.0.0
