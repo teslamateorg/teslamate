@@ -100,8 +100,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: echo
+        run: echo "yo"
+
       - uses: ./.github/actions/grafana
         with:
-          image: ${{ env.REGISTRY_IMAGE }}/grafana
+          image: ${{ env.REGISTRY_IMAGE }}-grafana
           labels: |
             org.opencontainers.image.version=${{ github.ref || github.ref_name }}
