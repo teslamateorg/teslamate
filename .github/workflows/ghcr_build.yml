@@ -42,7 +42,10 @@ jobs:
       - name : machine echo github
         env : { CONTENT : "${{ toJson(github) }}" }    
         run : "echo $CONTENT"
-        
+      - name: echo
+        run: |
+          ls -l  && cat VERSION 
+          
       - uses: actions/checkout@v4
         if: ${{ github.event_name != 'pull_request_target' }}
       - uses: actions/checkout@v4
@@ -102,6 +105,6 @@ jobs:
 
       - uses: ./.github/actions/grafana
         with:
-          image: ${{ env.REGISTRY_IMAGE }}/grafana
+          image: ${{ env.REGISTRY_IMAGE }}-grafana
           labels: |
             org.opencontainers.image.version=${{ github.ref || github.ref_name }}
